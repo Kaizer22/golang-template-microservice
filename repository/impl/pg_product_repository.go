@@ -19,7 +19,7 @@ type pgProductRepository struct {
 	db *sql.DB
 }
 
-var insQ = "INSERT INTO products (product_name, description, category_id) VALUES (?,?,?);"
+var insQ = "INSERT INTO products (product_name, description, category_id) VALUES ($1, $2, $3);"
 
 func (r pgProductRepository) InsertProducts(ctx context.Context, products []*entity.Product) error {
 	err := utils.RunWithProfiler(repository.TagInsPr,
@@ -45,6 +45,7 @@ func (r pgProductRepository) InsertProducts(ctx context.Context, products []*ent
 				)
 				if err != nil {
 					logging.ErrorFormat("could not insert product %d %s", product.Id, product.Name)
+					return err
 				}
 			}
 
@@ -60,7 +61,7 @@ func (r pgProductRepository) InsertProducts(ctx context.Context, products []*ent
 	return nil
 }
 
-const delQ = "DELETE FROM products WHERE id = ?"
+const delQ = "DELETE FROM products WHERE id = $1"
 
 func (r pgProductRepository) DeleteProducts(ctx context.Context, products []*entity.Product) error {
 	err := utils.RunWithProfiler(repository.TagInsPr,
@@ -148,7 +149,7 @@ func (r pgProductRepository) GetAllProducts(ctx context.Context) ([]*entity.Prod
 	return res, nil
 }
 
-const getPrByIdQ = "SELECT id, product_name, category_id, description FROM products WHERE id = ?"
+const getPrByIdQ = "SELECT id, product_name, category_id, description FROM products WHERE id = $1"
 
 func (r pgProductRepository) GetProductById(ctx context.Context, id int) (*entity.Product, error) {
 	res := entity.Product{}
@@ -192,9 +193,9 @@ func (r pgProductRepository) GetProductById(ctx context.Context, id int) (*entit
 }
 
 const getPrByQueryQ = "SELECT * FROM products p INNER JOIN categories c ON p.category_id = c.id" + "" +
-	"WHERE p.product_name LIKE ?" +
-	"OR p.description LIKE ?" +
-	"OR c.category_name LIKE ?;"
+	"WHERE p.product_name LIKE $1" +
+	"OR p.description LIKE $2" +
+	"OR c.category_name LIKE $3;"
 
 func (r pgProductRepository) GetProductsByQuery(ctx context.Context, q string) ([]*entity.Product, error) {
 	var res []*entity.Product

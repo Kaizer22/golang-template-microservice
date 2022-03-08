@@ -46,36 +46,36 @@ func parseLogLevel(logLevel string) logging.Level {
 func InfoFormat(message string, params ...interface{}) {
 	lock.Lock()
 	defer lock.Unlock()
-	log.Infof(message, params)
+	log.Infof(message, params...)
 }
 func Info(params ...interface{}) {
 	lock.Lock()
 	defer lock.Unlock()
-	log.Info(params)
+	log.Info(params...)
 }
 func ErrorFormat(message string, params ...interface{}) {
 	lock.Lock()
 	defer lock.Unlock()
-	log.Errorf(message, params)
+	log.Errorf(message, params...)
 }
 func Error(params ...interface{}) {
 	lock.Lock()
 	defer lock.Unlock()
-	log.Error(params)
+	log.Error(params...)
 }
 func DebugFormat(message string, params ...interface{}) {
 	lock.Lock()
 	defer lock.Unlock()
-	log.Debugf(message, params)
+	log.Debugf(message, params...)
 }
 func Debug(params ...interface{}) {
 	lock.Lock()
 	defer lock.Unlock()
-	log.Debug(params)
+	log.Debug(params...)
 }
 
 func FatalFormat(message string, params ...interface{}) {
 	lock.Lock()
 	defer lock.Unlock()
-	log.Fatalf(message, params)
+	log.Fatalf(message, params...)
 }
