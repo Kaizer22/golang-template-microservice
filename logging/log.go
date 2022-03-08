@@ -61,8 +61,7 @@ func ErrorFormat(message string, params ...interface{}) {
 func Error(params ...interface{}) {
 	lock.Lock()
 	defer lock.Unlock()
-	log.
-		log.Error(params)
+	log.Error(params)
 }
 func DebugFormat(message string, params ...interface{}) {
 	lock.Lock()

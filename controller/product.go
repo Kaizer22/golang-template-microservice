@@ -5,7 +5,10 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"main/logging"
+	"main/model/entity"
 	"main/repository"
+	"main/utils"
+	"net/http"
 )
 
 // Example controller for product entity
@@ -35,7 +38,29 @@ func NewProductController(ctx context.Context, repo repository.ProductRepository
 // @Failure      	500   {object}  utils.HTTPError
 // @Router			/products [post]
 func (c *ProductController) AddProduct(ctx *gin.Context) {
+	var p entity.AddProduct
+	if err := ctx.ShouldBindJSON(&p); err != nil {
+		utils.NewError(ctx, http.StatusBadRequest, err)
+		return
+	}
+	//TODO add struct validation
+	product := entity.Product{
+		Name:        p.Name,
+		Description: p.Description,
+		CategoryId:  p.CategoryId,
+	}
 
+	//TODO deal with contexts correctly
+	c2 := context.Background()
+	err := c.ProductRepo.InsertProducts(c2, []*entity.Product{
+		&product,
+	})
+	if err != nil {
+		utils.NewError(ctx, http.StatusInternalServerError, err)
+		return
+	}
+	//TODO return struct with ID
+	ctx.JSON(http.StatusOK, "Product created")
 }
 
 // ListProducts godoc

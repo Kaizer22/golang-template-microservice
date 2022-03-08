@@ -1,11 +1,25 @@
 package impl
 
+import (
+	"database/sql"
+	"errors"
+	"fmt"
+	"github.com/golang-migrate/migrate/v4"
+	_ "github.com/golang-migrate/migrate/v4/source/file"
+	_ "github.com/lib/pq"
+	"main/db"
+	"main/logging"
+	"main/utils"
+)
+
 const (
-	PostgresHostEnv     = "POSTGRES_HOST"
-	PostgresPortEnv     = "POSTGRES_PORT"
-	PostgresDatabaseEnv = "POSTGRES_DB"
-	PostgresUsernameEnv = "POSTGRES_USERNAME"
-	PostgresPasswordEnv = "POSTGRES_PASSWORD"
+	PostgresHostEnv              = "POSTGRES_HOST"
+	PostgresPortEnv              = "POSTGRES_PORT"
+	PostgresDatabaseEnv          = "POSTGRES_DB"
+	PostgresUsernameEnv          = "POSTGRES_USERNAME"
+	PostgresPasswordEnv          = "POSTGRES_PASSWORD"
+	PostgresSSLModeEnv           = "POSTGRES_SSL_MODE"
+	PostgresConnectionTimeoutEnv = "POSTGRES_CONNECTION_TIMEOUT"
 )
 
 type pgConnectionOptions struct {
@@ -17,91 +31,91 @@ type pgConnectionOptions struct {
 	// PgConnectionTimeout timeout in seconds
 	PgConnectionTimeout int64
 	PgSslMode           string
+
+	PgConnectionString string
 }
 
 type pgConnectionProvider struct {
 	options pgConnectionOptions
+	pgDb    *sql.DB
 }
 
-func NewPgConnectionProvider() {
+func NewPgConnectionProvider() (db.ConnectionProvider, error) {
+	options := pgConnectionOptions{
+		PgHost:              utils.GetEnv(PostgresHostEnv, "localhost"),
+		PgPort:              utils.GetEnv(PostgresPortEnv, "5432"),
+		PgUsername:          utils.GetEnv(PostgresUsernameEnv, "postgres"),
+		PgPassword:          utils.GetEnv(PostgresPasswordEnv, "postgres"),
+		PgDatabase:          utils.GetEnv(PostgresDatabaseEnv, "store"),
+		PgConnectionTimeout: utils.GetEnvInt(PostgresConnectionTimeoutEnv, 10),
+		PgSslMode:           utils.GetEnv(PostgresSSLModeEnv, "disable"),
+	}
+	options.PgConnectionString = fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s",
+		options.PgUsername, options.PgPassword,
+		options.PgHost, options.PgPort,
+		options.PgDatabase, options.PgSslMode)
 
+	dbConnection, err := sql.Open("postgres", options.PgConnectionString)
+	if err != nil {
+		logging.FatalFormat("cannot open db connection %s",
+			options.PgConnectionString, err)
+		return nil, err
+	}
+	logging.DebugFormat("opened a new pg connection - %s", options.PgConnectionString)
+	provider := pgConnectionProvider{
+		options: options,
+		pgDb:    dbConnection,
+	}
+	if c, err := provider.IsConnected(); err != nil || !c {
+		logging.FatalFormat("cannot establish a connection to %s", options.PgConnectionString)
+		return nil, err
+	}
+
+	return provider, nil
 }
 
-//func GetPgConnection() *pgConnectionProvider {
-//	connInit.Do(func() {
-//
-//		if conn, err := dbConnection.IsConnected(); !conn {
-//			logging.Error("Cannot establish connection to a DB")
-//			panic(err)
-//		}
-//	})
-//	return dbConnection
-//}
-//
-//func createSchema(db *pg.DB) error {
-//
-//	return nil
-//}
-//
-//const ConnectionTestQuery = "SELECT 1"
-//func (p *PgConnection) IsConnected() (bool, error) {
-//	if _, err := p.connection.Exec(ConnectionTestQuery); err != nil {
-//		return false, err
-//	}
-//	return true, nil
-//}
-//
-//func (p *PgConnection) Migrate() error {
-//	connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
-//		p.options.User,
-//		p.options.Password,
-//		p.options.Addr,
-//		p.options.Database)
-//	fmt.Println(connStr)
-//	logging.InfoFormat("Start migration with connection string %s", connStr)
-//
-//	m, err := migrate.New(MigrationsPath, connStr)
-//	if err != nil {
-//		return err
-//	}
-//
-//	err = m.Up()
-//	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
-//		return err
-//	}
-//
-//	return nil
-//}
-//
-//func (p *PgConnection) Connection() *pg.DB {
-//	return p.connection.Conn().
-//}
-//
-//func connectionOptions() *pg.Options  {
-//	host := utils.GetEnv(repository.PostgresHostEnv, "localhost")
-//	port := utils.GetEnv(repository.PostgresPortEnv, "5432")
-//	//logging.InfoFormat()
-//	opts := &pg.Options{
-//		Addr:                  fmt.Sprintf("%s:%s", host, port),
-//		User:                  utils.GetEnv(repository.PostgresUsernameEnv, "postgres"),
-//		Password:              utils.GetEnv(repository.PostgresPasswordEnv, "postgres"),
-//		Database:              utils.GetEnv(repository.PostgresDatabaseEnv, "geo_object_provider"),
-//		//ApplicationName:       "",
-//		//TLSConfig:             nil,
-//		//DialTimeout:           0,
-//		//ReadTimeout:           0,
-//		//WriteTimeout:          0,
-//		//MaxRetries:            0,
-//		//RetryStatementTimeout: false,
-//		//MinRetryBackoff:       0,
-//		//MaxRetryBackoff:       0,
-//		//PoolSize:              0,
-//		//MinIdleConns:          0,
-//		//MaxConnAge:            0,
-//		//PoolTimeout:           0,
-//		//IdleTimeout:           0,
-//		//IdleCheckFrequency:    0,
-//	}
-//	logging.InfoFormat("PostgreSQL connection params: %v", &opts)
-//	return opts
-//}
+const ConnectionTestQuery = "SELECT 1"
+
+func (p pgConnectionProvider) IsConnected() (bool, error) {
+	if _, err := p.pgDb.Exec(ConnectionTestQuery); err != nil {
+		return false, err
+	}
+	return true, nil
+}
+
+func (p pgConnectionProvider) Migrate(migrationPath string) error {
+	connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
+		p.options.PgUsername,
+		p.options.PgPassword,
+		p.options.PgHost,
+		p.options.PgDatabase)
+	fmt.Println(connStr)
+	logging.InfoFormat("Start migration with connection string %s", connStr)
+
+	//p.createDbIfNeeded()
+
+	m, err := migrate.New(migrationPath, connStr)
+	if err != nil {
+		return err
+	}
+
+	err = m.Up()
+	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
+		return err
+	}
+
+	return nil
+}
+
+func (p pgConnectionProvider) Connection() *sql.DB {
+	return p.pgDb
+}
+
+func (p pgConnectionProvider) createDbIfNeeded() error {
+	if _, err := p.pgDb.Exec(
+		fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", p.options.PgDatabase),
+	); err != nil {
+		return err
+	}
+	return nil
+}

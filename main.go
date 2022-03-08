@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"github.com/gin-gonic/gin"
 	"main/controller"
+	conn "main/db/impl"
 	"main/logging"
+	repo "main/repository/impl"
 	"main/utils"
 
 	swaggerFiles "github.com/swaggo/files"
@@ -40,8 +43,16 @@ const (
 )
 
 func main() {
+	ctx := context.Background()
 	r := gin.Default()
-	c := controller.NewProductController()
+
+	connection, err := conn.NewPgConnectionProvider()
+	if err != nil {
+		panic(err)
+	}
+
+	productRepo := repo.NewPgProductRepository(connection.Connection())
+	c := controller.NewProductController(ctx, productRepo)
 
 	v1 := r.Group(apiV1)
 	{
@@ -58,7 +69,7 @@ func main() {
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	initService()
 	logging.InfoFormat("Starting server at %s", addr)
-	err := r.Run(addr)
+	err = r.Run(addr)
 	if err != nil {
 		logging.FatalFormat("unable to start server")
 		panic(err)

@@ -19,7 +19,7 @@ type pgProductRepository struct {
 	db *sql.DB
 }
 
-const insQ = "INSERT name, description, category_id INTO products VALUES(?, ?, ?)"
+var insQ = "INSERT INTO products (product_name, description, category_id) VALUES (?,?,?);"
 
 func (r pgProductRepository) InsertProducts(ctx context.Context, products []*entity.Product) error {
 	err := utils.RunWithProfiler(repository.TagInsPr,
@@ -31,7 +31,7 @@ func (r pgProductRepository) InsertProducts(ctx context.Context, products []*ent
 			}
 			defer tx.Rollback()
 
-			stmt, err := tx.PrepareContext(ctx, insQ)
+			stmt, err := tx.Prepare(insQ)
 			if err != nil {
 				logging.Error("could not prepare a statement")
 				return err
@@ -99,7 +99,7 @@ func (r pgProductRepository) DeleteProducts(ctx context.Context, products []*ent
 	return nil
 }
 
-const getAllPrQ = "SELECT id, name, category_id, description FROM products"
+const getAllPrQ = "SELECT id, product_name, category_id, description FROM products"
 
 func (r pgProductRepository) GetAllProducts(ctx context.Context) ([]*entity.Product, error) {
 	var res []*entity.Product
@@ -148,7 +148,7 @@ func (r pgProductRepository) GetAllProducts(ctx context.Context) ([]*entity.Prod
 	return res, nil
 }
 
-const getPrByIdQ = "SELECT id, name, category_id, description FROM products WHERE id = ?"
+const getPrByIdQ = "SELECT id, product_name, category_id, description FROM products WHERE id = ?"
 
 func (r pgProductRepository) GetProductById(ctx context.Context, id int) (*entity.Product, error) {
 	res := entity.Product{}

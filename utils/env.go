@@ -1,10 +1,8 @@
 package utils
 
 const (
-	ListenAddressEnvKey      = "LISTEN_ADDRESS"
-	CacheTTLEnvKey           = "CACHE_TTL"
-	CacheCleanIntervalEnvKey = "CACHE_CLEAN_INTERVAL"
-	CacheSizeEnvKey          = "CACHE_SIZE"
-	CacheInstancesCount      = "CACHE_INSTANCES_COUNT"
+
+	//TODO all env names at one place
+	ListenAddressEnvKey = "LISTEN_ADDRESS"
 	//LogLevelEnvKey = "LOG_LEVEL"
 )

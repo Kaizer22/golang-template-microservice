@@ -2,6 +2,7 @@ package utils
 
 import (
 	"os"
+	"strconv"
 	"unicode/utf8"
 )
 
@@ -29,4 +30,15 @@ func GetEnv(key, defaultValue string) string {
 		return value
 	}
 	return defaultValue
+}
+
+func GetEnvInt(key string, dflt int64) int64 {
+	if s, ok := os.LookupEnv(key); ok {
+		if result, err := strconv.ParseInt(s, 10, 64); err != nil {
+			return dflt
+		} else {
+			return result
+		}
+	}
+	return dflt
 }
