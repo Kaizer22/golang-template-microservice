@@ -2,13 +2,12 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"github.com/gin-gonic/gin"
-	"main/logging"
 	"main/model/entity"
 	"main/repository"
 	"main/utils"
 	"net/http"
+	"strconv"
 )
 
 // Example controller for product entity
@@ -26,19 +25,19 @@ func NewProductController(ctx context.Context, repo repository.ProductRepository
 }
 
 // AddProduct godoc
-// @Summary			Add new product
-// @Description 	Add new product and get entity with ID in a response
-// @Tags			Products
-// @Accept			json
-// @Produce			json
-// @Param			product	body		entity.Product	true	"Product info"
-// @Success			201	  {string}	string				"New product successfully added"
-// @Failure      	400   {object}  utils.HTTPError
-// @Failure      	404   {object}  utils.HTTPError
-// @Failure      	500   {object}  utils.HTTPError
-// @Router			/products [post]
+// @Summary            Add new product
+// @Description    Add new product and get entity with ID in a response
+// @Tags                          products
+// @Accept                        json
+// @Produce                       json
+// @Param               product   body            entity.ProductData  true  "Product info"
+// @Success             201             {string}  string                        "New product successfully added"
+// @Failure        400  {object}  utils.HTTPError
+// @Failure        404  {object}  utils.HTTPError
+// @Failure        500  {object}  utils.HTTPError
+// @Router                        /products [post]
 func (c *ProductController) AddProduct(ctx *gin.Context) {
-	var p entity.AddProduct
+	var p entity.ProductData
 	if err := ctx.ShouldBindJSON(&p); err != nil {
 		utils.NewError(ctx, http.StatusBadRequest, err)
 		return
@@ -64,67 +63,138 @@ func (c *ProductController) AddProduct(ctx *gin.Context) {
 }
 
 // ListProducts godoc
-// @Summary			Get products
-// @Description 	Returns all the products in system or products filtered using query
-// @Tags			Products
-// @Accept			json
-// @Produce			json
-// @Param			query	query	string	false	"search in name, description or category"
-// @Success			201		{array}		entity.Product
-// @Failure      	400   	{object}  	utils.HTTPError
-// @Failure      	404   	{object}  	utils.HTTPError
-// @Failure      	500   	{object}  	utils.HTTPError
-// @Router			/products [get]
+// @Summary            Get products
+// @Description    Returns all the products in system or products filtered using query
+// @Tags                       products
+// @Accept                     json
+// @Produce                    json
+// @Param               query  query     string   false  "search substring in name, description or category"
+// @Success             201              {array}         entity.Product
+// @Failure        400         {object}           utils.HTTPError
+// @Failure        404         {object}           utils.HTTPError
+// @Failure        500         {object}           utils.HTTPError
+// @Router                     /products [get]
 func (c *ProductController) ListProducts(ctx *gin.Context) {
-	logging.InfoFormat("List of products")
-	fmt.Println("List of products")
+	query := ctx.Request.URL.Query().Get("query")
+	c2 := context.Background()
+	if len(query) > 0 {
+		if products, err := c.ProductRepo.GetProductsByQuery(c2, query); err != nil {
+			utils.NewError(ctx, http.StatusInternalServerError, err)
+			return
+		} else {
+			ctx.JSON(http.StatusOK, products)
+			return
+		}
+	} else {
+		if products, err := c.ProductRepo.GetAllProducts(c2); err != nil {
+			utils.NewError(ctx, http.StatusInternalServerError, err)
+			return
+		} else {
+			ctx.JSON(http.StatusOK, products)
+			return
+		}
+	}
 }
 
 // GetProduct godoc
-// @Summary			Get product by ID
-// @Description 	Returns product by ID
-// @Tags			Products
-// @Accept			json
-// @Produce			json
-// @Param			id		path		int	true	"Product ID"
-// @Success			200		{object}	entity.Product
-// @Failure      	400   	{object}	utils.HTTPError
-// @Failure      	404   	{object}	utils.HTTPError
-// @Failure      	500   	{object}	utils.HTTPError
-// @Router			/products/{id} [get]
+// @Summary            Get product by ID
+// @Description    Returns product by ID
+// @Tags                     products
+// @Accept                   json
+// @Produce                  json
+// @Param               id             path        int  true  "Product ID"
+// @Success             200            {object}  entity.Product
+// @Failure        400       {object}  utils.HTTPError
+// @Failure        404       {object}  utils.HTTPError
+// @Failure        500       {object}  utils.HTTPError
+// @Router                   /products/{id} [get]
 func (c *ProductController) GetProduct(ctx *gin.Context) {
+	id := ctx.Param("id")
+	iID, err := strconv.Atoi(id)
+	if err != nil {
+		utils.NewError(ctx, http.StatusBadRequest, err)
+		return
+	}
 
+	//TODO deal with contexts correctly
+	c2 := context.Background()
+	product, err := c.ProductRepo.GetProductById(c2, iID)
+	if err != nil {
+		utils.NewError(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, product)
 }
 
 // PutProduct godoc
-// @Summary			Edit product
-// @Description 	Edit existing product
-// @Tags			Products
-// @Accept			json
-// @Produce			json
-// @Param			id			path		int				true	"Product ID"
-// @Param			data		body		entity.Product	true	"Product entity"
-// @Success			200		{object}	entity.Product
-// @Failure      	400   	{object}  	utils.HTTPError
-// @Failure      	404   	{object}  	utils.HTTPError
-// @Failure      	500   	{object}  	utils.HTTPError
-// @Router			/products/{id} [put]
+// @Summary            Edit product
+// @Description    Edit existing product
+// @Tags                      products
+// @Accept                    json
+// @Produce                   json
+// @Param               id                        path                        int         true  "Product ID"
+// @Param               data            body              entity.ProductData  true  "Product entity"
+// @Success             200             {string}  string  "Product updated"
+// @Failure        400        {object}            utils.HTTPError
+// @Failure        404        {object}            utils.HTTPError
+// @Failure        500        {object}            utils.HTTPError
+// @Router                    /products/{id} [put]
 func (c *ProductController) PutProduct(ctx *gin.Context) {
+	id := ctx.Param("id")
+	iID, err := strconv.Atoi(id)
+	if err != nil {
+		utils.NewError(ctx, http.StatusBadRequest, err)
+		return
+	}
+	var p entity.ProductData
+	if err := ctx.ShouldBindJSON(&p); err != nil {
+		utils.NewError(ctx, http.StatusBadRequest, err)
+		return
+	}
+	//TODO add struct validation
+	product := entity.ProductData{
+		Name:        p.Name,
+		Description: p.Description,
+		CategoryId:  p.CategoryId,
+	}
 
+	//TODO deal with contexts correctly
+	c2 := context.Background()
+	err = c.ProductRepo.UpdateProduct(c2, iID, product)
+	if err != nil {
+		utils.NewError(ctx, http.StatusInternalServerError, err)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, "Product updated")
 }
 
 // DeleteProduct godoc
-// @Summary			Delete product
-// @Description 	Delete selected product
-// @Tags			Products
-// @Accept			json
-// @Produce			json
-// @Param			id     	path	int		true	"Account ID"
-// @Success			200	{string}	string	"Product deleted"
-// @Failure      	400	{object}	utils.HTTPError
-// @Failure      	404	{object}	utils.HTTPError
-// @Failure      	500	{object}	utils.HTTPError
-// @Router			/products/{id} [delete]
+// @Summary            Delete product
+// @Description    Delete selected product
+// @Tags                          products
+// @Accept                        json
+// @Produce                       json
+// @Param               id                  path    int    true  "Account ID"
+// @Success             200       {string}  string  "Product deleted"
+// @Failure        400  {object}  utils.HTTPError
+// @Failure        404  {object}  utils.HTTPError
+// @Failure        500  {object}  utils.HTTPError
+// @Router                        /products/{id} [delete]
 func (c *ProductController) DeleteProduct(ctx *gin.Context) {
+	productId := ctx.Param("id")
+	c2 := context.Background()
+	iID, err := strconv.Atoi(productId)
+	if err != nil {
+		utils.NewError(ctx, http.StatusBadRequest, err)
+		return
+	}
+	err = c.ProductRepo.DeleteProducts(c2, iID)
+	if err != nil {
+		utils.NewError(ctx, http.StatusInternalServerError, err)
+		return
+	}
 
+	ctx.JSON(http.StatusOK, "Product deleted")
 }

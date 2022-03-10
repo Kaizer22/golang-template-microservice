@@ -11,6 +11,7 @@ import (
 
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
+	_ "main/docs"
 )
 
 var (
@@ -33,10 +34,6 @@ var (
 // @BasePath  /api/v1
 
 // @securityDefinitions.basic  BasicAuth
-
-// @securityDefinitions.apikey  ApiKeyAuth
-// @in                          header
-// @name                        Authorization
 
 const (
 	apiV1 = "/api/v1"

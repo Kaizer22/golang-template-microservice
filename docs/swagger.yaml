@@ -1,22 +1,40 @@
 basePath: /api/v1
-swagger: "2.0"
 definitions:
   entity.Product:
     properties:
       category_id:
+        example: 3
         type: integer
       description:
+        example: Carbonated sweet drink
         type: string
       id:
+        example: 1
+        format: int64
         type: integer
       name:
+        example: Pepsi
+        type: string
+    type: object
+  entity.ProductData:
+    properties:
+      category_id:
+        example: 3
+        type: integer
+      description:
+        example: Carbonated sweet drink
+        type: string
+      name:
+        example: Pepsi
         type: string
     type: object
   utils.HTTPError:
     properties:
       code:
+        example: 200
         type: integer
       message:
+        example: Product created
         type: string
     type: object
 host: localhost:8080
@@ -39,7 +57,7 @@ paths:
       - application/json
       description: Returns all the products in system or products filtered using query
       parameters:
-      - description: search in name, description or category
+      - description: search substring in name, description or category
         in: query
         name: query
         type: string
@@ -66,7 +84,7 @@ paths:
             $ref: '#/definitions/utils.HTTPError'
       summary: Get products
       tags:
-      - Products
+      - products
     post:
       consumes:
       - application/json
@@ -77,7 +95,7 @@ paths:
         name: product
         required: true
         schema:
-          $ref: '#/definitions/entity.Product'
+          $ref: '#/definitions/entity.ProductData'
       produces:
       - application/json
       responses:
@@ -99,7 +117,7 @@ paths:
             $ref: '#/definitions/utils.HTTPError'
       summary: Add new product
       tags:
-      - Products
+      - products
   /products/{id}:
     delete:
       consumes:
@@ -132,7 +150,7 @@ paths:
             $ref: '#/definitions/utils.HTTPError'
       summary: Delete product
       tags:
-      - Products
+      - products
     get:
       consumes:
       - application/json
@@ -164,7 +182,7 @@ paths:
             $ref: '#/definitions/utils.HTTPError'
       summary: Get product by ID
       tags:
-      - Products
+      - products
     put:
       consumes:
       - application/json
@@ -180,14 +198,14 @@ paths:
         name: data
         required: true
         schema:
-          $ref: '#/definitions/entity.Product'
+          $ref: '#/definitions/entity.ProductData'
       produces:
       - application/json
       responses:
         "200":
-          description: OK
+          description: Product updated
           schema:
-            $ref: '#/definitions/entity.Product'
+            type: string
         "400":
           description: Bad Request
           schema:
@@ -202,12 +220,8 @@ paths:
             $ref: '#/definitions/utils.HTTPError'
       summary: Edit product
       tags:
-      - Products
+      - products
 securityDefinitions:
-  ApiKeyAuth:
-    in: header
-    name: Authorization
-    type: apiKey
   BasicAuth:
     type: basic
-
+swagger: "2.0"

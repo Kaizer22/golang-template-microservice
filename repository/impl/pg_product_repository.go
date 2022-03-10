@@ -61,9 +61,51 @@ func (r pgProductRepository) InsertProducts(ctx context.Context, products []*ent
 	return nil
 }
 
+const updQ = "UPDATE products SET product_name = $1, description = $2, category_id = $3" +
+	"WHERE id = $4"
+
+func (r pgProductRepository) UpdateProduct(ctx context.Context, id int, data entity.ProductData) error {
+	err := utils.RunWithProfiler(repository.TagUpdPr,
+		func() error {
+			tx, err := r.db.Begin()
+			if err != nil {
+				logging.Error("could not begin a transaction")
+				return err
+			}
+			defer tx.Rollback()
+
+			stmt, err := tx.PrepareContext(ctx, updQ)
+			if err != nil {
+				logging.Error("could not prepare a statement")
+				return err
+			}
+
+			_, err = stmt.ExecContext(ctx,
+				data.Name,
+				data.Description,
+				data.CategoryId,
+				id,
+			)
+			if err != nil {
+				logging.ErrorFormat("could not update product %d %s", id, data.Name)
+				return err
+			}
+
+			if err = tx.Commit(); err != nil {
+				logging.Error("could not commit a transaction")
+				return err
+			}
+			return nil
+		})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 const delQ = "DELETE FROM products WHERE id = $1"
 
-func (r pgProductRepository) DeleteProducts(ctx context.Context, products []*entity.Product) error {
+func (r pgProductRepository) DeleteProducts(ctx context.Context, id int) error {
 	err := utils.RunWithProfiler(repository.TagInsPr,
 		func() error {
 			tx, err := r.db.Begin()
@@ -79,13 +121,10 @@ func (r pgProductRepository) DeleteProducts(ctx context.Context, products []*ent
 				return err
 			}
 
-			for _, product := range products {
-				_, err = stmt.ExecContext(ctx,
-					product.Id,
-				)
-				if err != nil {
-					logging.ErrorFormat("could not delete product %d %s", product.Id, product.Name)
-				}
+			_, err = stmt.ExecContext(ctx, id)
+			if err != nil {
+				logging.ErrorFormat("could not delete product %d %s", id)
+				return err
 			}
 
 			if err = tx.Commit(); err != nil {
@@ -121,7 +160,7 @@ func (r pgProductRepository) GetAllProducts(ctx context.Context) ([]*entity.Prod
 
 			result, err := stmt.QueryContext(ctx)
 			if err != nil {
-				logging.ErrorFormat("could not get all products")
+				logging.ErrorFormat("could not get all products: %s", err)
 			}
 			for result.Next() {
 				p := entity.Product{}
@@ -132,7 +171,7 @@ func (r pgProductRepository) GetAllProducts(ctx context.Context) ([]*entity.Prod
 					&p.Description,
 				)
 				if err != nil {
-					logging.Error("could not read product")
+					logging.ErrorFormat("could not read product: %s", err)
 				}
 				res = append(res, &p)
 			}
@@ -171,13 +210,14 @@ func (r pgProductRepository) GetProductById(ctx context.Context, id int) (*entit
 			row := stmt.QueryRowContext(ctx, id)
 
 			err = row.Scan(
-				res.Id,
-				res.Name,
-				res.CategoryId,
-				res.Description,
+				&res.Id,
+				&res.Name,
+				&res.CategoryId,
+				&res.Description,
 			)
 			if err != nil {
 				logging.ErrorFormat("could not get product by id %d ", id)
+				return err
 			}
 
 			if err = tx.Commit(); err != nil {
@@ -192,9 +232,10 @@ func (r pgProductRepository) GetProductById(ctx context.Context, id int) (*entit
 	return &res, nil
 }
 
-const getPrByQueryQ = "SELECT * FROM products p INNER JOIN categories c ON p.category_id = c.id" + "" +
-	"WHERE p.product_name LIKE $1" +
-	"OR p.description LIKE $2" +
+const getPrByQueryQ = "SELECT p.id, p.product_name, p.category_id, p.description FROM products p " +
+	"INNER JOIN categories c ON p.category_id = c.id " +
+	"WHERE p.product_name LIKE $1 " +
+	"OR p.description LIKE $2 " +
 	"OR c.category_name LIKE $3;"
 
 func (r pgProductRepository) GetProductsByQuery(ctx context.Context, q string) ([]*entity.Product, error) {
@@ -220,6 +261,8 @@ func (r pgProductRepository) GetProductsByQuery(ctx context.Context, q string) (
 			}
 			for result.Next() {
 				p := entity.Product{}
+				str, _ := result.Columns()
+				logging.InfoFormat("Columns: %+v", str)
 				err := result.Scan(
 					&p.Id,
 					&p.Name,
@@ -227,7 +270,7 @@ func (r pgProductRepository) GetProductsByQuery(ctx context.Context, q string) (
 					&p.Description,
 				)
 				if err != nil {
-					logging.Error("could not read product")
+					logging.ErrorFormat("could not read product: %s", err)
 				}
 				res = append(res, &p)
 			}

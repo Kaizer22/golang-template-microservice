@@ -35,13 +35,13 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Products"
+                    "products"
                 ],
                 "summary": "Get products",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "search in name, description or category",
+                        "description": "search substring in name, description or category",
                         "name": "query",
                         "in": "query"
                     }
@@ -85,7 +85,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Products"
+                    "products"
                 ],
                 "summary": "Add new product",
                 "parameters": [
@@ -95,7 +95,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.Product"
+                            "$ref": "#/definitions/entity.ProductData"
                         }
                     }
                 ],
@@ -137,7 +137,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Products"
+                    "products"
                 ],
                 "summary": "Get product by ID",
                 "parameters": [
@@ -185,7 +185,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Products"
+                    "products"
                 ],
                 "summary": "Edit product",
                 "parameters": [
@@ -202,15 +202,15 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.Product"
+                            "$ref": "#/definitions/entity.ProductData"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "OK",
+                        "description": "Product updated",
                         "schema": {
-                            "$ref": "#/definitions/entity.Product"
+                            "type": "string"
                         }
                     },
                     "400": {
@@ -242,7 +242,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Products"
+                    "products"
                 ],
                 "summary": "Delete product",
                 "parameters": [
@@ -288,16 +288,38 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "category_id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 3
                 },
                 "description": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Carbonated sweet drink"
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "format": "int64",
+                    "example": 1
                 },
                 "name": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Pepsi"
+                }
+            }
+        },
+        "entity.ProductData": {
+            "type": "object",
+            "properties": {
+                "category_id": {
+                    "type": "integer",
+                    "example": 3
+                },
+                "description": {
+                    "type": "string",
+                    "example": "Carbonated sweet drink"
+                },
+                "name": {
+                    "type": "string",
+                    "example": "Pepsi"
                 }
             }
         },
@@ -305,20 +327,17 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "code": {
-                    "type": "integer"
+                    "type": "integer",
+                    "example": 200
                 },
                 "message": {
-                    "type": "string"
+                    "type": "string",
+                    "example": "Product created"
                 }
             }
         }
     },
     "securityDefinitions": {
-        "ApiKeyAuth": {
-            "type": "apiKey",
-            "name": "Authorization",
-            "in": "header"
-        },
         "BasicAuth": {
             "type": "basic"
         }
