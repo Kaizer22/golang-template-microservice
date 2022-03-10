@@ -17,7 +17,7 @@ TODO:
 - Cron scheduler
 - Profiling with pprof
 
-To get the Swagger page go to: `/api/v1/swagger/index.html`
+To get the Swagger page go to: `/swagger/index.html`
 
 | Var name                    | Var description                                                                                                              | Default value |
 |-----------------------------|------------------------------------------------------------------------------------------------------------------------------|---------------|
