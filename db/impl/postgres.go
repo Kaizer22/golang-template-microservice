@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/golang-migrate/migrate/v4"
+	"github.com/golang-migrate/migrate/v4/database/postgres"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
 	_ "github.com/lib/pq"
 	"main/db"
@@ -46,7 +47,7 @@ func NewPgConnectionProvider() (db.ConnectionProvider, error) {
 		PgPort:              utils.GetEnv(PostgresPortEnv, "5432"),
 		PgUsername:          utils.GetEnv(PostgresUsernameEnv, "postgres"),
 		PgPassword:          utils.GetEnv(PostgresPasswordEnv, "postgres"),
-		PgDatabase:          utils.GetEnv(PostgresDatabaseEnv, "store"),
+		PgDatabase:          utils.GetEnv(PostgresDatabaseEnv, "promo"),
 		PgConnectionTimeout: utils.GetEnvInt(PostgresConnectionTimeoutEnv, 10),
 		PgSslMode:           utils.GetEnv(PostgresSSLModeEnv, "disable"),
 	}
@@ -84,26 +85,27 @@ func (p pgConnectionProvider) IsConnected() (bool, error) {
 }
 
 func (p pgConnectionProvider) Migrate(migrationPath string) error {
-	connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
-		p.options.PgUsername,
-		p.options.PgPassword,
-		p.options.PgHost,
-		p.options.PgDatabase)
-	fmt.Println(connStr)
-	logging.InfoFormat("Start migration with connection string %s", connStr)
+	//connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
+	//	p.options.PgUsername,
+	//	p.options.PgPassword,
+	//	p.options.PgHost,
+	//	p.options.PgDatabase)
+	//fmt.Println(connStr)
+	//logging.InfoFormat("Start migration with connection string %s", connStr)
 
 	//p.createDbIfNeeded()
-
-	m, err := migrate.New(migrationPath, connStr)
-	if err != nil {
-		return err
-	}
+	db, err := sql.Open("postgres", p.options.PgConnectionString)
+	driver, err := postgres.WithInstance(db, &postgres.Config{})
+	m, err := migrate.NewWithDatabaseInstance(
+		migrationPath,
+		"postgres", driver)
 
 	err = m.Up()
 	if err != nil && !errors.Is(err, migrate.ErrNoChange) {
 		return err
 	}
 
+	db.Close()
 	return nil
 }
 

@@ -1,74 +1,104 @@
-basePath: /api/v1
+basePath: /promo
 definitions:
-  entity.Product:
+  entity.Participant:
     properties:
-      category_id:
-        example: 3
-        type: integer
-      description:
-        example: Carbonated sweet drink
-        type: string
       id:
-        example: 1
-        format: int64
         type: integer
       name:
-        example: Pepsi
         type: string
     type: object
-  entity.ProductData:
+  entity.ParticipantInfo:
     properties:
-      category_id:
-        example: 3
-        type: integer
+      name:
+        type: string
+    type: object
+  entity.Prize:
+    properties:
       description:
-        example: Carbonated sweet drink
+        type: string
+      id:
+        type: integer
+    type: object
+  entity.PrizeInfo:
+    properties:
+      description:
+        type: string
+    type: object
+  entity.PromoInfo:
+    properties:
+      description:
         type: string
       name:
-        example: Pepsi
         type: string
+    type: object
+  entity.PromoResult:
+    properties:
+      prize:
+        $ref: '#/definitions/entity.Prize'
+      winner:
+        $ref: '#/definitions/entity.Participant'
+    type: object
+  entity.PromoShort:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+    type: object
+  entity.Promotion:
+    properties:
+      description:
+        type: string
+      id:
+        type: integer
+      name:
+        type: string
+      participants:
+        items:
+          $ref: '#/definitions/entity.Participant'
+        type: array
+      prizes:
+        items:
+          $ref: '#/definitions/entity.Prize'
+        type: array
     type: object
   utils.HTTPError:
     properties:
       code:
-        example: 200
+        example: 404
         type: integer
       message:
-        example: Product created
+        example: Not found
         type: string
     type: object
 host: localhost:8080
 info:
   contact:
-    email: support@swagger.io
-    name: API Support
+    name: GitHub repository
     url: http://www.swagger.io/support
-  description: This is a sample server.
+  description: RESTful API
   license:
     name: Apache 2.0
     url: http://www.apache.org/licenses/LICENSE-2.0.html
   termsOfService: http://swagger.io/terms/
-  title: Swagger Example API
+  title: API для промоакций и розыгрыша призов
   version: "1.0"
 paths:
-  /products:
+  /promo:
     get:
       consumes:
       - application/json
-      description: Returns all the products in system or products filtered using query
-      parameters:
-      - description: search substring in name, description or category
-        in: query
-        name: query
-        type: string
+      description: Returns short info about all the promos in system
       produces:
       - application/json
       responses:
-        "201":
-          description: Created
+        "200":
+          description: OK
           schema:
             items:
-              $ref: '#/definitions/entity.Product'
+              $ref: '#/definitions/entity.PromoShort'
             type: array
         "400":
           description: Bad Request
@@ -82,27 +112,27 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.HTTPError'
-      summary: Get products
+      summary: Get promos
       tags:
-      - products
+      - promos
     post:
       consumes:
       - application/json
-      description: Add new product and get entity with ID in a response
+      description: Add new promo and get entity with ID in a response
       parameters:
-      - description: Product info
+      - description: Promo info
         in: body
-        name: product
+        name: promo_info
         required: true
         schema:
-          $ref: '#/definitions/entity.ProductData'
+          $ref: '#/definitions/entity.PromoInfo'
       produces:
       - application/json
       responses:
         "201":
-          description: New product successfully added
+          description: Promo ID
           schema:
-            type: string
+            type: integer
         "400":
           description: Bad Request
           schema:
@@ -115,16 +145,16 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.HTTPError'
-      summary: Add new product
+      summary: Add new promotion
       tags:
-      - products
-  /products/{id}:
+      - promos
+  /promo/{promoId}:
     delete:
       consumes:
       - application/json
-      description: Delete selected product
+      description: Delete selected promotion
       parameters:
-      - description: Account ID
+      - description: Promotion ID
         in: path
         name: id
         required: true
@@ -133,7 +163,7 @@ paths:
       - application/json
       responses:
         "200":
-          description: Product deleted
+          description: Promotion deleted
           schema:
             type: string
         "400":
@@ -148,15 +178,15 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.HTTPError'
-      summary: Delete product
+      summary: Delete promotion
       tags:
-      - products
+      - promos
     get:
       consumes:
       - application/json
       description: Returns product by ID
       parameters:
-      - description: Product ID
+      - description: Promo ID
         in: path
         name: id
         required: true
@@ -167,7 +197,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/entity.Product'
+            $ref: '#/definitions/entity.Promotion'
         "400":
           description: Bad Request
           schema:
@@ -182,28 +212,28 @@ paths:
             $ref: '#/definitions/utils.HTTPError'
       summary: Get product by ID
       tags:
-      - products
+      - promos
     put:
       consumes:
       - application/json
-      description: Edit existing product
+      description: Edit existing promotion
       parameters:
-      - description: Product ID
+      - description: Promotion ID
         in: path
         name: id
         required: true
         type: integer
-      - description: Product entity
+      - description: Promotion info entity
         in: body
         name: data
         required: true
         schema:
-          $ref: '#/definitions/entity.ProductData'
+          $ref: '#/definitions/entity.PromoInfo'
       produces:
       - application/json
       responses:
         "200":
-          description: Product updated
+          description: Promo updated
           schema:
             type: string
         "400":
@@ -218,9 +248,203 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/utils.HTTPError'
-      summary: Edit product
+      summary: Edit promotion
       tags:
-      - products
+      - promos
+  /promo/{promoId}/participant:
+    post:
+      consumes:
+      - application/json
+      description: Add new participant and get entity with ID in a response
+      parameters:
+      - description: Promotion ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Participant info
+        in: body
+        name: participant
+        required: true
+        schema:
+          $ref: '#/definitions/entity.ParticipantInfo'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Participant ID
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Add new participant
+      tags:
+      - promos
+  /promo/{promoId}/participant/{participantId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete participant from promo by ID
+      parameters:
+      - description: Promotion ID
+        in: path
+        name: promoId
+        required: true
+        type: integer
+      - description: Participant ID
+        in: path
+        name: participantId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Participant successfully deleted
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Delete participant from promo
+      tags:
+      - promos
+  /promo/{promoId}/prize:
+    post:
+      consumes:
+      - application/json
+      description: Add new prize to a promo
+      parameters:
+      - description: Promotion ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Prize info
+        in: body
+        name: prize
+        required: true
+        schema:
+          $ref: '#/definitions/entity.PrizeInfo'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Prize ID
+          schema:
+            type: integer
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Add new prize
+      tags:
+      - promos
+  /promo/{promoId}/prize/{prizeId}:
+    delete:
+      consumes:
+      - application/json
+      description: Delete prize from promo by ID
+      parameters:
+      - description: Promotion ID
+        in: path
+        name: promoId
+        required: true
+        type: integer
+      - description: Prize ID
+        in: path
+        name: prizeId
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Prize deleted
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Delete prize from promo
+      tags:
+      - promos
+  /promo/{promoId}/raffle:
+    post:
+      consumes:
+      - application/json
+      description: Get promo winners with prizes (only if number of participants is
+        equals to number of prizes
+      parameters:
+      - description: Promotion ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            items:
+              $ref: '#/definitions/entity.PromoResult'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "409":
+          description: Conflict
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get promo winners
+      tags:
+      - promos
 securityDefinitions:
   BasicAuth:
     type: basic

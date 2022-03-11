@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"main/controller"
+	"main/db"
 	conn "main/db/impl"
 	"main/logging"
 	repo "main/repository/impl"
@@ -18,25 +19,24 @@ var (
 	addr string
 )
 
-// @title           Swagger Example API
+// @title           API для промоакций и розыгрыша призов
 // @version         1.0
-// @description     This is a sample server.
+// @description     RESTful API
 // @termsOfService  http://swagger.io/terms/
 
-// @contact.name   API Support
+// @contact.name   GitHub repository
 // @contact.url    http://www.swagger.io/support
-// @contact.email  support@swagger.io
 
 // @license.name  Apache 2.0
 // @license.url   http://www.apache.org/licenses/LICENSE-2.0.html
 
 // @host      localhost:8080
-// @BasePath  /api/v1
+// @BasePath  /promo
 
 // @securityDefinitions.basic  BasicAuth
 
 const (
-	apiV1 = "/api/v1"
+	promo = "/promo"
 )
 
 func main() {
@@ -47,21 +47,26 @@ func main() {
 	if err != nil {
 		panic(err)
 	}
+	err = connection.Migrate(db.PgMigrationsPath)
+	if err != nil {
+		panic(err)
+	}
 
-	productRepo := repo.NewPgProductRepository(connection.Connection())
-	c := controller.NewProductController(ctx, productRepo)
+	promoRepo := repo.NewPgPromoRepository(connection.Connection())
+	c := controller.NewPromoController(ctx, promoRepo)
 
-	v1 := r.Group(apiV1)
+	v1Promo := r.Group(promo)
 	{
-		products := v1.Group("/products")
-		{
-			products.POST("", c.AddProduct)
-			products.GET("", c.ListProducts)
-			products.GET(":id", c.GetProduct)
-			products.PUT(":id", c.PutProduct)
-			products.DELETE(":id", c.DeleteProduct)
-
-		}
+		v1Promo.POST("", c.AddPromo)
+		v1Promo.GET("", c.ListPromos)
+		v1Promo.GET(":promoId", c.GetPromo)
+		v1Promo.PUT(":promoId", c.PutPromo)
+		v1Promo.DELETE(":promoId", c.DeletePromo)
+		v1Promo.POST(":promoId/participant", c.AddParticipant)
+		v1Promo.DELETE(":promoId/participant/:participantId", c.DeleteParticipant)
+		v1Promo.POST("/:promoId/prize", c.DeletePrize)
+		v1Promo.DELETE(":promoId/prize/:prizeId", c.DeletePrize)
+		v1Promo.POST(":promoId/raffle", c.GetWinners)
 	}
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	initService()

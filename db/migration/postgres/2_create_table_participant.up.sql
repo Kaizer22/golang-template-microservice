@@ -1,0 +1,5 @@
+CREATE TABLE IF NOT EXISTS participant (
+    id INT GENERATED ALWAYS AS IDENTITY,
+    name VARCHAR,
+    PRIMARY KEY (id)
+);

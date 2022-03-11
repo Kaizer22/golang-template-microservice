@@ -9,14 +9,6 @@ Has a basic functionality:
 - Business logic
 - Configuring using envs
 
-TODO:
-- Dockerfile
-- Basic Authentication
-- Improve logging
-- Templates for async jobs
-- Cron scheduler
-- Profiling with pprof
-
 To get the Swagger page go to: `/swagger/index.html`
 
 | Var name                    | Var description                                                                                                              | Default value |

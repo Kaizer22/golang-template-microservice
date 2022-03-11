@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS products (
+CREATE TABLE IF NOT EXISTS promotion_result (
     id INT GENERATED ALWAYS AS IDENTITY,
-    name VARCHAR,
+    winner_id INT,
     description TEXT,
     category_id INT,
     PRIMARY KEY (id),
