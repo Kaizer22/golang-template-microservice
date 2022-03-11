@@ -1,4 +1,4 @@
-basePath: /promo
+basePath: /
 definitions:
   entity.Participant:
     properties:
@@ -156,7 +156,7 @@ paths:
       parameters:
       - description: Promotion ID
         in: path
-        name: id
+        name: promoId
         required: true
         type: integer
       produces:
@@ -188,7 +188,7 @@ paths:
       parameters:
       - description: Promo ID
         in: path
-        name: id
+        name: promoId
         required: true
         type: integer
       produces:
@@ -220,7 +220,7 @@ paths:
       parameters:
       - description: Promotion ID
         in: path
-        name: id
+        name: promoId
         required: true
         type: integer
       - description: Promotion info entity
@@ -259,7 +259,7 @@ paths:
       parameters:
       - description: Promotion ID
         in: path
-        name: id
+        name: promoId
         required: true
         type: integer
       - description: Participant info
@@ -336,7 +336,7 @@ paths:
       parameters:
       - description: Promotion ID
         in: path
-        name: id
+        name: promoId
         required: true
         type: integer
       - description: Prize info
@@ -414,7 +414,7 @@ paths:
       parameters:
       - description: Promotion ID
         in: path
-        name: id
+        name: promoId
         required: true
         type: integer
       produces:

@@ -12,9 +12,8 @@ const docTemplate = `{
         "title": "{{.Title}}",
         "termsOfService": "http://swagger.io/terms/",
         "contact": {
-            "name": "API Support",
-            "url": "http://www.swagger.io/support",
-            "email": "support@swagger.io"
+            "name": "GitHub repository",
+            "url": "http://www.swagger.io/support"
         },
         "license": {
             "name": "Apache 2.0",
@@ -25,9 +24,9 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/products": {
+        "/promo": {
             "get": {
-                "description": "Returns all the products in system or products filtered using query",
+                "description": "Returns short info about all the promos in system",
                 "consumes": [
                     "application/json"
                 ],
@@ -35,24 +34,16 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "products"
+                    "promos"
                 ],
-                "summary": "Get products",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "search substring in name, description or category",
-                        "name": "query",
-                        "in": "query"
-                    }
-                ],
+                "summary": "Get promos",
                 "responses": {
-                    "201": {
-                        "description": "Created",
+                    "200": {
+                        "description": "OK",
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/entity.Product"
+                                "$ref": "#/definitions/entity.PromoShort"
                             }
                         }
                     },
@@ -77,7 +68,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Add new product and get entity with ID in a response",
+                "description": "Add new promo and get entity with ID in a response",
                 "consumes": [
                     "application/json"
                 ],
@@ -85,25 +76,25 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "products"
+                    "promos"
                 ],
-                "summary": "Add new product",
+                "summary": "Add new promotion",
                 "parameters": [
                     {
-                        "description": "Product info",
-                        "name": "product",
+                        "description": "Promo info",
+                        "name": "promo_info",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.ProductData"
+                            "$ref": "#/definitions/entity.PromoInfo"
                         }
                     }
                 ],
                 "responses": {
                     "201": {
-                        "description": "New product successfully added",
+                        "description": "Promo ID",
                         "schema": {
-                            "type": "string"
+                            "type": "integer"
                         }
                     },
                     "400": {
@@ -127,7 +118,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/products/{id}": {
+        "/promo/{promoId}": {
             "get": {
                 "description": "Returns product by ID",
                 "consumes": [
@@ -137,14 +128,14 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "products"
+                    "promos"
                 ],
                 "summary": "Get product by ID",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Product ID",
-                        "name": "id",
+                        "description": "Promo ID",
+                        "name": "promoId",
                         "in": "path",
                         "required": true
                     }
@@ -153,7 +144,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/entity.Product"
+                            "$ref": "#/definitions/entity.Promotion"
                         }
                     },
                     "400": {
@@ -177,7 +168,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Edit existing product",
+                "description": "Edit existing promotion",
                 "consumes": [
                     "application/json"
                 ],
@@ -185,30 +176,30 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "products"
+                    "promos"
                 ],
-                "summary": "Edit product",
+                "summary": "Edit promotion",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Product ID",
-                        "name": "id",
+                        "description": "Promotion ID",
+                        "name": "promoId",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Product entity",
+                        "description": "Promotion info entity",
                         "name": "data",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/entity.ProductData"
+                            "$ref": "#/definitions/entity.PromoInfo"
                         }
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Product updated",
+                        "description": "Promo updated",
                         "schema": {
                             "type": "string"
                         }
@@ -234,7 +225,7 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete selected product",
+                "description": "Delete selected promotion",
                 "consumes": [
                     "application/json"
                 ],
@@ -242,21 +233,21 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "products"
+                    "promos"
                 ],
-                "summary": "Delete product",
+                "summary": "Delete promotion",
                 "parameters": [
                     {
                         "type": "integer",
-                        "description": "Account ID",
-                        "name": "id",
+                        "description": "Promotion ID",
+                        "name": "promoId",
                         "in": "path",
                         "required": true
                     }
                 ],
                 "responses": {
                     "200": {
-                        "description": "Product deleted",
+                        "description": "Promotion deleted",
                         "schema": {
                             "type": "string"
                         }
@@ -281,45 +272,397 @@ const docTemplate = `{
                     }
                 }
             }
-        }
-    },
-    "definitions": {
-        "entity.Product": {
-            "type": "object",
-            "properties": {
-                "category_id": {
-                    "type": "integer",
-                    "example": 3
-                },
-                "description": {
-                    "type": "string",
-                    "example": "Carbonated sweet drink"
-                },
-                "id": {
-                    "type": "integer",
-                    "format": "int64",
-                    "example": 1
-                },
-                "name": {
-                    "type": "string",
-                    "example": "Pepsi"
+        },
+        "/promo/{promoId}/participant": {
+            "post": {
+                "description": "Add new participant and get entity with ID in a response",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promos"
+                ],
+                "summary": "Add new participant",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Promotion ID",
+                        "name": "promoId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Participant info",
+                        "name": "participant",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.ParticipantInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Participant ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    }
                 }
             }
         },
-        "entity.ProductData": {
+        "/promo/{promoId}/participant/{participantId}": {
+            "delete": {
+                "description": "Delete participant from promo by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promos"
+                ],
+                "summary": "Delete participant from promo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Promotion ID",
+                        "name": "promoId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Participant ID",
+                        "name": "participantId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Participant successfully deleted",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/promo/{promoId}/prize": {
+            "post": {
+                "description": "Add new prize to a promo",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promos"
+                ],
+                "summary": "Add new prize",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Promotion ID",
+                        "name": "promoId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Prize info",
+                        "name": "prize",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/entity.PrizeInfo"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Prize ID",
+                        "schema": {
+                            "type": "integer"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/promo/{promoId}/prize/{prizeId}": {
+            "delete": {
+                "description": "Delete prize from promo by ID",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promos"
+                ],
+                "summary": "Delete prize from promo",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Promotion ID",
+                        "name": "promoId",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Prize ID",
+                        "name": "prizeId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Prize deleted",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    }
+                }
+            }
+        },
+        "/promo/{promoId}/raffle": {
+            "post": {
+                "description": "Get promo winners with prizes (only if number of participants is equals to number of prizes",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "promos"
+                ],
+                "summary": "Get promo winners",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Promotion ID",
+                        "name": "promoId",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/entity.PromoResult"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    },
+                    "409": {
+                        "description": "Conflict",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.HTTPError"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "entity.Participant": {
             "type": "object",
             "properties": {
-                "category_id": {
-                    "type": "integer",
-                    "example": 3
-                },
-                "description": {
-                    "type": "string",
-                    "example": "Carbonated sweet drink"
+                "id": {
+                    "type": "integer"
                 },
                 "name": {
-                    "type": "string",
-                    "example": "Pepsi"
+                    "type": "string"
+                }
+            }
+        },
+        "entity.ParticipantInfo": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.Prize": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "entity.PrizeInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.PromoInfo": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.PromoResult": {
+            "type": "object",
+            "properties": {
+                "prize": {
+                    "$ref": "#/definitions/entity.Prize"
+                },
+                "winner": {
+                    "$ref": "#/definitions/entity.Participant"
+                }
+            }
+        },
+        "entity.PromoShort": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "entity.Promotion": {
+            "type": "object",
+            "properties": {
+                "description": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "participants": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Participant"
+                    }
+                },
+                "prizes": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/entity.Prize"
+                    }
                 }
             }
         },
@@ -328,11 +671,11 @@ const docTemplate = `{
             "properties": {
                 "code": {
                     "type": "integer",
-                    "example": 200
+                    "example": 404
                 },
                 "message": {
                     "type": "string",
-                    "example": "Product created"
+                    "example": "Not found"
                 }
             }
         }
@@ -348,10 +691,10 @@ const docTemplate = `{
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
 	Host:             "localhost:8080",
-	BasePath:         "/api/v1",
+	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "Swagger Example API",
-	Description:      "This is a sample server.",
+	Title:            "API для промоакций и розыгрыша призов",
+	Description:      "RESTful API",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 }

@@ -77,7 +77,7 @@ func (c *PromoController) ListPromos(ctx *gin.Context) {
 // @Tags                     promos
 // @Accept                   json
 // @Produce                  json
-// @Param               id             path        int  true  "Promo ID"
+// @Param               promoId             path        int  true  "Promo ID"
 // @Success        200       {object}  entity.Promotion
 // @Failure        400       {object}  utils.HTTPError
 // @Failure        404       {object}  utils.HTTPError
@@ -106,7 +106,7 @@ func (c *PromoController) GetPromo(ctx *gin.Context) {
 // @Tags                      promos
 // @Accept                    json
 // @Produce                   json
-// @Param          id         path                        int         true  "Promotion ID"
+// @Param          promoId         path                        int         true  "Promotion ID"
 // @Param          data       body              entity.PromoInfo  true  "Promotion info entity"
 // @Success        200   	  {string}  string  "Promo updated"
 // @Failure        400        {object}            utils.HTTPError
@@ -141,12 +141,12 @@ func (c *PromoController) PutPromo(ctx *gin.Context) {
 // @Tags                          promos
 // @Accept                        json
 // @Produce                       json
-// @Param               id                  path    int    true  "Promotion ID"
+// @Param               promoId                  path    int    true  "Promotion ID"
 // @Success         200       {string}  string  "Promotion deleted"
 // @Failure        400  {object}  utils.HTTPError
 // @Failure        404  {object}  utils.HTTPError
 // @Failure        500  {object}  utils.HTTPError
-// @Router                        /promo/{promoId} [delete]
+// @Router                       /promo/{promoId} [delete]
 func (c *PromoController) DeletePromo(ctx *gin.Context) {
 	promoId := ctx.Param("promoId")
 	iID, err := strconv.Atoi(promoId)
@@ -169,7 +169,7 @@ func (c *PromoController) DeletePromo(ctx *gin.Context) {
 // @Tags                          promos
 // @Accept                        json
 // @Produce                       json
-// @Param               id                  path    int    true  "Promotion ID"
+// @Param               promoId                  path    int    true  "Promotion ID"
 // @Param               participant   body            entity.ParticipantInfo  true  "Participant info"
 // @Success        201  {integer} string         "Participant ID"
 // @Failure        400  {object}  utils.HTTPError
@@ -241,7 +241,7 @@ func (c *PromoController) DeleteParticipant(ctx *gin.Context) {
 // @Tags                          promos
 // @Accept                        json
 // @Produce                       json
-// @Param               id            path    int    true  "Promotion ID"
+// @Param               promoId            path    int    true  "Promotion ID"
 // @Param               prize   body            entity.PrizeInfo true  "Prize info"
 // @Success        201  {integer} string  "Prize ID"
 // @Failure        400  {object}  utils.HTTPError
@@ -312,7 +312,7 @@ func (c *PromoController) DeletePrize(ctx *gin.Context) {
 // @Tags                          promos
 // @Accept                        json
 // @Produce                       json
-// @Param               id            path    int    true  "Promotion ID"
+// @Param               promoId            path    int    true  "Promotion ID"
 // @Success        201  {array}  entity.PromoResult
 // @Failure        400  {object}  utils.HTTPError
 // @Failure        404  {object}  utils.HTTPError

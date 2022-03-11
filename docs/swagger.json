@@ -15,7 +15,7 @@
         "version": "1.0"
     },
     "host": "localhost:8080",
-    "basePath": "/promo",
+    "basePath": "/",
     "paths": {
         "/promo": {
             "get": {
@@ -128,7 +128,7 @@
                     {
                         "type": "integer",
                         "description": "Promo ID",
-                        "name": "id",
+                        "name": "promoId",
                         "in": "path",
                         "required": true
                     }
@@ -176,7 +176,7 @@
                     {
                         "type": "integer",
                         "description": "Promotion ID",
-                        "name": "id",
+                        "name": "promoId",
                         "in": "path",
                         "required": true
                     },
@@ -233,7 +233,7 @@
                     {
                         "type": "integer",
                         "description": "Promotion ID",
-                        "name": "id",
+                        "name": "promoId",
                         "in": "path",
                         "required": true
                     }
@@ -283,7 +283,7 @@
                     {
                         "type": "integer",
                         "description": "Promotion ID",
-                        "name": "id",
+                        "name": "promoId",
                         "in": "path",
                         "required": true
                     },
@@ -399,7 +399,7 @@
                     {
                         "type": "integer",
                         "description": "Promotion ID",
-                        "name": "id",
+                        "name": "promoId",
                         "in": "path",
                         "required": true
                     },
@@ -515,7 +515,7 @@
                     {
                         "type": "integer",
                         "description": "Promotion ID",
-                        "name": "id",
+                        "name": "promoId",
                         "in": "path",
                         "required": true
                     }

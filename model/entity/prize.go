@@ -2,7 +2,7 @@ package entity
 
 // Prize example
 type Prize struct {
-	Id          int64  `json:"id"`
+	Id          int    `json:"id"`
 	Description string `json:"description"`
 }
 
