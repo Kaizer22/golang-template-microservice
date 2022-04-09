@@ -10,6 +10,7 @@ Has a basic functionality:
 - Configuring using envs
 
 TODO:
+- Use some ORMs
 - Dockerfile
 - Basic Authentication
 - Improve logging
