@@ -8,6 +8,7 @@ Has a basic functionality:
 - Auto generating Swagger docs
 - Business logic
 - Configuring using envs
+- Profiling with pprof
 
 TODO:
 - Use some ORMs
@@ -16,7 +17,7 @@ TODO:
 - Improve logging
 - Templates for async jobs
 - Cron scheduler
-- Profiling with pprof
+
 
 To get the Swagger page go to: `/swagger/index.html`
 
