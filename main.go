@@ -9,6 +9,7 @@ import (
 	repo "main/repository/impl"
 	"main/utils"
 
+	"github.com/gin-contrib/pprof"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 	_ "main/docs"
@@ -64,6 +65,8 @@ func main() {
 		}
 	}
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	pprof.Register(r, "/debug/pprof")
+
 	initService()
 	logging.InfoFormat("Starting server at %s", addr)
 	err = r.Run(addr)
@@ -77,5 +80,4 @@ func main() {
 
 func initService() {
 	addr = utils.GetEnv(utils.ListenAddressEnvKey, ":8080")
-
 }

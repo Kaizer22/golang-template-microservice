@@ -13,6 +13,7 @@ require (
 )
 
 require (
+	github.com/gin-contrib/pprof v1.3.0
 	github.com/go-openapi/swag v0.21.1 // indirect
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/lib/pq v1.10.4
