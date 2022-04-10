@@ -15,6 +15,7 @@ require (
 require (
 	github.com/gin-contrib/pprof v1.3.0
 	github.com/go-openapi/swag v0.21.1 // indirect
+	github.com/go-pg/pg/v10 v10.10.6
 	github.com/golang-migrate/migrate/v4 v4.15.1
 	github.com/lib/pq v1.10.4
 	github.com/mailru/easyjson v0.7.7 // indirect
