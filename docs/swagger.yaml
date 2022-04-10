@@ -28,13 +28,20 @@ definitions:
         example: Pepsi
         type: string
     type: object
+  response.HealthStatus:
+    properties:
+      info:
+        type: string
+      status:
+        type: string
+    type: object
   utils.HTTPError:
     properties:
       code:
-        example: 200
+        example: 500
         type: integer
       message:
-        example: Product created
+        example: Internal error
         type: string
     type: object
 host: localhost:8080
@@ -51,6 +58,62 @@ info:
   title: Swagger Example API
   version: "1.0"
 paths:
+  /health:
+    get:
+      consumes:
+      - application/json
+      description: Health status for services' components
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/response.HealthStatus'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get health
+      tags:
+      - health
+  /health/version:
+    get:
+      consumes:
+      - application/json
+      description: Current version of the service
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.HTTPError'
+      summary: Get version
+      tags:
+      - health
   /products:
     get:
       consumes:

@@ -52,6 +52,10 @@ func main() {
 	productRepo := repo.NewPgProductRepository(connection.Connection())
 	c := controller.NewProductController(ctx, productRepo)
 
+	hC := controller.NewHealthCheckController(ctx,
+		connection,
+	)
+
 	v1 := r.Group(apiV1)
 	{
 		products := v1.Group("/products")
@@ -62,6 +66,11 @@ func main() {
 			products.PUT(":id", c.PutProduct)
 			products.DELETE(":id", c.DeleteProduct)
 
+		}
+		health := v1.Group("/health")
+		{
+			health.GET("", hC.GetHealthStatus)
+			health.GET("version", hC.GetServiceVersion)
 		}
 	}
 	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

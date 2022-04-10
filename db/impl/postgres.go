@@ -83,6 +83,10 @@ func (p pgConnectionProvider) IsConnected() (bool, error) {
 	return true, nil
 }
 
+func (p pgConnectionProvider) Description() string {
+	return "Postgres"
+}
+
 func (p pgConnectionProvider) Migrate(migrationPath string) error {
 	connStr := fmt.Sprintf("postgres://%s:%s@%s/%s?sslmode=disable",
 		p.options.PgUsername,
