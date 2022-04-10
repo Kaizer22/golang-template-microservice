@@ -4,6 +4,7 @@ import (
 	"context"
 	"github.com/gin-gonic/gin"
 	"main/controller"
+	"main/db"
 	conn "main/db/impl"
 	"main/logging"
 	repo "main/repository/impl"
@@ -45,6 +46,10 @@ func main() {
 	r := gin.Default()
 
 	connection, err := conn.NewPgConnectionProvider()
+	if err != nil {
+		panic(err)
+	}
+	err = connection.Migrate(db.PgMigrationsPath)
 	if err != nil {
 		panic(err)
 	}
